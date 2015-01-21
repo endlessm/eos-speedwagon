@@ -5,6 +5,21 @@
     background-position: center center;
 }
 
-.speedwagon-spinner {
+.speedwagon-spinner-bg {
     background-image: url('splash-spinner-channel.png');
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+.glow .speedwagon-spinner-bg {
+    transition: background-image 1s;
+    background-image: url('splash-spinner-channel-glowing.png');
+}
+
+.speedwagon-spinner {
+    -gtk-icon-source: url('splash-spinner.png');
+    animation: spin 2s linear infinite;
+}
+.glow .speedwagon-spinner {
+    transition: -gtk-icon-source 1s;
+    -gtk-icon-source: url('splash-spinner-glowing.png');
 }
