@@ -7,5 +7,7 @@
     <file alias="splash-spinner.png">data/splash-spinner.png</file>
     <file alias="splash-spinner-channel-glowing.png">data/splash-spinner-channel-glowing.png</file>
     <file alias="splash-spinner-glowing.png">data/splash-spinner-glowing.png</file>
+    <file alias="splash-spinner-channel-glow.png">data/splash-spinner-channel-glow.png</file>
+    <file alias="splash-spinner-glow.png">data/splash-spinner-glow.png</file>
   </gresource>
 </gresources>

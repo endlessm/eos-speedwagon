@@ -7,12 +7,14 @@
 
 .speedwagon-spinner-bg {
     background-image: url('splash-spinner-channel.png');
+    /* HACK: prevent the zoom-in on the glow */
+    background-size: 220px 220px, 220px 220px;
     background-repeat: no-repeat;
     background-position: center center;
 }
 .glow .speedwagon-spinner-bg {
     transition: background-image 1s;
-    background-image: url('splash-spinner-channel-glowing.png');
+    background-image: url('splash-spinner-channel.png'), url('splash-spinner-channel-glow.png');
 }
 
 .speedwagon-spinner {
