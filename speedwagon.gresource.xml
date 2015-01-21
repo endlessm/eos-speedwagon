@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/com/endlessm/Speedwagon">
+    <file alias="speedwagon.css">data/speedwagon.css</file>
+    <file alias="splash-background-default.jpg">data/splash-background-default.jpg</file>
+    <file alias="splash-spinner-channel.png">data/splash-spinner-channel.png</file>
+    <file alias="splash-spinner.png">data/splash-spinner.png</file>
+    <file alias="splash-spinner-channel-glow.png">data/splash-spinner-channel-glow.png</file>
+    <file alias="splash-spinner-glow.png">data/splash-spinner-glow.png</file>
+  </gresource>
+</gresources>

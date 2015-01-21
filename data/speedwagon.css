@@ -1,0 +1,10 @@
+
+.speedwagon-bg {
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center center;
+}
+
+.speedwagon-spinner {
+    background-image: url('splash-spinner-channel.png');
+}
