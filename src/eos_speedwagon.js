@@ -35,6 +35,8 @@ const SPLASH_SCREEN_COMPLETE_TIME = 1;
 const SPLASH_BACKGROUND_DESKTOP_KEY = 'X-Endless-SplashBackground';
 const DEFAULT_SPLASH_SCREEN_BACKGROUND = 'resource:///com/endlessm/Speedwagon/splash-background-default.jpg';
 
+const QUIT_TIMEOUT = 15;
+
 const Window = new Lang.Class({
     Name: 'EosSpeedwagonWindow',
     Extends: Gtk.ApplicationWindow,
@@ -130,7 +132,9 @@ const EosSpeedwagon = new Lang.Class({
     Extends: Gtk.Application,
 
     _init: function() {
-        this.parent({ application_id: 'com.endlessm.Speedwagon' });
+        this.parent({ application_id: 'com.endlessm.Speedwagon',
+                      flags: Gio.ApplicationFlags.IS_SERVICE,
+                      inactivity_timeout: QUIT_TIMEOUT * 1000 });
 
         this._dbusImpl = Gio.DBusExportedObject.wrapJSObject(SpeedwagonIface, this);
         this._dbusImpl.export(Gio.DBus.session, '/com/endlessm/Speedwagon');
@@ -147,8 +151,6 @@ const EosSpeedwagon = new Lang.Class({
         let provider = new Gtk.CssProvider();
         provider.load_from_file(Gio.File.new_for_uri('resource:///com/endlessm/Speedwagon/speedwagon.css'));
         Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(), provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
-
-        this.hold();
     },
 
     vfunc_activate: function() {
@@ -178,5 +180,12 @@ const EosSpeedwagon = new Lang.Class({
     },
 });
 
-let app = new EosSpeedwagon();
-app.run(null);
+function main() {
+    let app = new EosSpeedwagon();
+    if (GLib.getenv('EOS_SPEEDWAGON_PERSIST'))
+        app.hold();
+    return app.run(null);
+}
+
+main();
+
