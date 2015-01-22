@@ -1,16 +1,15 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
+const Format = imports.format;
+const Lang = imports.lang;
+
+const Config = imports.config;
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
 const Gdk = imports.gi.Gdk;
-
 // Needed to be imported so that get_window() returns a proper wrapper.
 const GdkX11 = imports.gi.GdkX11;
-
 const Gtk = imports.gi.Gtk;
-
-const Format = imports.format;
-const Lang = imports.lang;
 
 const SpeedwagonIface = '<node> \
 <interface name="com.endlessm.Speedwagon"> \
@@ -145,7 +144,7 @@ const EosSpeedwagon = new Lang.Class({
     vfunc_startup: function() {
         this.parent();
 
-        let resource = Gio.Resource.load('speedwagon.gresource');
+        let resource = Gio.Resource.load(Config.RESOURCE_DIR + '/speedwagon.gresource');
         resource._register();
 
         let provider = new Gtk.CssProvider();
@@ -180,12 +179,9 @@ const EosSpeedwagon = new Lang.Class({
     },
 });
 
-function main() {
+function main(argv) {
     let app = new EosSpeedwagon();
     if (GLib.getenv('EOS_SPEEDWAGON_PERSIST'))
         app.hold();
     return app.run(null);
 }
-
-main();
-

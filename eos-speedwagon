@@ -1,3 +1,0 @@
-#!/bin/bash
-
-exec gjs src/eos_speedwagon.js
