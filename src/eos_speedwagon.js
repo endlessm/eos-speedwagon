@@ -26,10 +26,10 @@ const SpeedwagonIface = '<node> \
 </node>';
 
 const SPLASH_CIRCLE_PERIOD = 2;
-const SPLASH_SCREEN_FADE_OUT = 1;
+const SPLASH_SCREEN_FADE_OUT = 0.2;
 
 // This needs to match the time of the transitions in speedwagon.css
-const SPLASH_SCREEN_COMPLETE_TIME = 1;
+const SPLASH_SCREEN_COMPLETE_TIME = 0.2;
 
 const SPLASH_BACKGROUND_DESKTOP_KEY = 'X-Endless-SplashBackground';
 const DEFAULT_SPLASH_SCREEN_BACKGROUND = 'resource:///com/endlessm/Speedwagon/splash-background-default.jpg';
@@ -119,7 +119,7 @@ const Window = new Lang.Class({
     rampOut: function() {
         this._baseBox.get_style_context().add_class('glow');
 
-        GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, SPLASH_SCREEN_COMPLETE_TIME, Lang.bind(this, function() {
+        GLib.timeout_add(GLib.PRIORITY_DEFAULT, SPLASH_SCREEN_COMPLETE_TIME * 1000, Lang.bind(this, function() {
             this._fadeOut();
             return false;
         }));
