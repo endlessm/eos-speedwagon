@@ -163,6 +163,8 @@ const EosSpeedwagon = new Lang.Class({
             this._splashes[appID] = new Window(this, appInfo);
             this._splashes[appID].connect('delete-event', Lang.bind(this, function() {
                 this._emitSplashClosed(appID);
+                this._splashes[appID] = null;
+                return false;
             }));
         }
 
@@ -170,7 +172,9 @@ const EosSpeedwagon = new Lang.Class({
     },
 
     HideSplash: function(appID) {
-        this._splashes[appID].rampOut();
+        if (this._splashes[appID])
+            this._splashes[appID].rampOut();
+
         this._splashes[appID] = null;
     },
 });
