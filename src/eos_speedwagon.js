@@ -47,6 +47,7 @@ const Window = new Lang.Class({
                       role: 'eos-speedwagon',
                       title: appInfo.get_name() });
         this.maximize();
+        this.set_keep_above(true);
 
         this.realize();
         let gdkWindow = this.get_window();
