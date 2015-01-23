@@ -49,11 +49,6 @@ const Window = new Lang.Class({
         this.maximize();
         this.set_keep_above(true);
 
-        this.realize();
-        let gdkWindow = this.get_window();
-        let appID = appInfo.get_id().replace('.desktop', '');
-        gdkWindow.set_utf8_property('_GTK_APPLICATION_ID', appID);
-
         this._buildUI();
     },
 
