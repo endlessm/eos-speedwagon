@@ -44,7 +44,8 @@ const Window = new Lang.Class({
         this._appInfo = appInfo;
 
         this.parent({ application: app,
-                      role: 'eos-speedwagon' });
+                      role: 'eos-speedwagon',
+                      title: appInfo.get_name() });
         this.maximize();
         this.set_keep_above(true);
 
