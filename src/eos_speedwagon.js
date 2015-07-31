@@ -55,6 +55,16 @@ const Window = new Lang.Class({
         gdkWindow.set_utf8_property('_GTK_APPLICATION_ID', appID);
 
         this._buildUI();
+
+        this._deleted = false;
+
+        this.connect('delete-event', Lang.bind(this, function() {
+            if (!this._deleted) {
+                this.application.emitSplashClosed(appID);
+                this._deleted = true;
+            }
+            return true;
+        }));
     },
 
     _buildUI: function() {
@@ -156,7 +166,7 @@ const EosSpeedwagon = new Lang.Class({
     vfunc_activate: function() {
     },
 
-    _emitSplashClosed: function(appID) {
+    emitSplashClosed: function(appID) {
         let connection = this._dbusImpl.get_connection();
         let info = this._dbusImpl.get_info();
         connection.emit_signal(null, this._dbusImpl.get_object_path(), info.name, 'SplashClosed', GLib.Variant.new('(s)', [appID]));
@@ -166,11 +176,6 @@ const EosSpeedwagon = new Lang.Class({
         if (!this._splashes[appID]) {
             let appInfo = Gio.DesktopAppInfo.new(appID);
             this._splashes[appID] = new Window(this, appInfo);
-            this._splashes[appID].connect('delete-event', Lang.bind(this, function() {
-                this._emitSplashClosed(appID);
-                this._splashes[appID] = null;
-                return false;
-            }));
         }
 
         this._splashes[appID].present();
