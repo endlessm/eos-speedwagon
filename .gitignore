@@ -1,11 +1,15 @@
 *~
 *.gresource
+*.o
+.deps
 
 Makefile
 Makefile.in
 /aclocal.m4
 /autom4te.cache
+/compile
 /configure
+/depcomp
 /install-sh
 /missing
 /config.guess
@@ -15,5 +19,6 @@ Makefile.in
 /config.sub
 
 /eos-speedwagon
-/src/config.js
+/src/speedwagon-resources.*
+/src/speedwagon-service.*
 /com.endlessm.Speedwagon.service
