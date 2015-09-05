@@ -1,0 +1,18 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+
+<!-- Copyright 2015 Endless Mobile, Inc. -->
+
+<node>
+  <interface name="com.endlessm.Speedwagon">
+    <method name="ShowSplash">
+      <arg type="s" direction="in" name="desktopFile" />
+    </method>
+    <method name="HideSplash">
+      <arg type="s" direction="in" name="desktopFile" />
+    </method>
+    <signal name="SplashClosed">
+      <arg type="s" name="desktopFile" />
+    </signal>
+  </interface>
+</node>
