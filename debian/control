@@ -11,7 +11,7 @@ Build-Depends: debhelper (>= 9),
 Standards-Version: 3.9.2
 
 Package: eos-speedwagon
-Architecture: all
+Architecture: any
 Section: non-free/utils
 Priority: extra
 Depends: ${misc:Depends},
