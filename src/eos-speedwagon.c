@@ -93,13 +93,23 @@ eos_speedwagon_window_build_ui (EosSpeedwagonWindow *self)
   else
     bg_path = g_strdup (DEFAULT_SPLASH_SCREEN_BACKGROUND);
 
+  GError *error = NULL;
   GtkCssProvider *provider = gtk_css_provider_new ();
   char *css_data =
     g_strdup_printf (".speedwagon-bg { background-image: url(\"%s\"); }",
                      bg_path);
-  gtk_css_provider_load_from_data (provider, css_data, -1, NULL);
-  gtk_style_context_add_provider (context, GTK_STYLE_PROVIDER (provider),
-                                  GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+  gtk_css_provider_load_from_data (provider, css_data, -1, &error);
+  if (error != NULL)
+    {
+      g_warning ("Unable to load CSS for custom splash: %s", error->message);
+      g_error_free (error);
+    }
+  else
+    {
+      context = gtk_widget_get_style_context (self->base_box);
+      gtk_style_context_add_provider (context, GTK_STYLE_PROVIDER (provider),
+                                      GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    }
 
   g_free (css_data);
   g_free (bg_path);
