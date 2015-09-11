@@ -106,6 +106,7 @@ eos_speedwagon_window_build_ui (EosSpeedwagonWindow *self)
     }
   else
     {
+      context = gtk_widget_get_style_context (self->base_box);
       gtk_style_context_add_provider (context, GTK_STYLE_PROVIDER (provider),
                                       GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
     }
