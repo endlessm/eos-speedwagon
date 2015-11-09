@@ -85,12 +85,41 @@ eos_speedwagon_window_build_ui (EosSpeedwagonWindow *self)
   gtk_widget_set_valign (image, GTK_ALIGN_CENTER);
   gtk_container_add (GTK_CONTAINER (spinner_box), image);
 
-  gchar *bg_path;
+  gchar *bg_path = NULL;
   if (g_desktop_app_info_has_key (self->app_info,
                                   SPLASH_BACKGROUND_DESKTOP_KEY))
-    bg_path = g_desktop_app_info_get_string (self->app_info,
-                                             SPLASH_BACKGROUND_DESKTOP_KEY);
-  else
+    {
+      gchar *bg_name =
+        g_desktop_app_info_get_string (self->app_info,
+                                       SPLASH_BACKGROUND_DESKTOP_KEY);
+
+      /* rewrite absolute paths */
+      if (g_path_is_absolute (bg_name))
+        {
+          gchar *basename = g_path_get_basename (bg_name);
+          g_free (bg_name);
+          bg_name = basename;
+        }
+
+      const gchar * const * data_dirs = g_get_system_data_dirs ();
+      int idx;
+
+      for (idx = 0; data_dirs[idx] != NULL; idx++)
+        {
+          const gchar *data_dir = data_dirs[idx];
+          bg_path = g_build_filename (data_dir, "eos-shell-content", "splash",
+                                      bg_name, NULL);
+
+          if (g_file_test (bg_path, G_FILE_TEST_EXISTS))
+            break;
+
+          g_clear_pointer (&bg_path, g_free);
+        }
+
+      g_free (bg_name);
+    }
+
+  if (bg_path == NULL)
     bg_path = g_strdup (DEFAULT_SPLASH_SCREEN_BACKGROUND);
 
   GError *error = NULL;
