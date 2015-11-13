@@ -55,9 +55,12 @@ get_splash_background_path (GDesktopAppInfo *app_info)
         g_desktop_app_info_get_string (app_info,
                                        SPLASH_BACKGROUND_DESKTOP_KEY);
 
-      /* rewrite absolute paths */
+      /* rewrite absolute paths, if they don't exist */
       if (g_path_is_absolute (bg_name))
         {
+          if (g_file_test (bg_name, G_FILE_TEST_EXISTS))
+            return bg_name;
+
           gchar *basename = g_path_get_basename (bg_name);
           g_free (bg_name);
           bg_name = basename;
