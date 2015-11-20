@@ -43,6 +43,81 @@ typedef struct {
 GType eos_speedwagon_window_get_type (void) G_GNUC_CONST;
 G_DEFINE_TYPE (EosSpeedwagonWindow, eos_speedwagon_window, GTK_TYPE_APPLICATION_WINDOW)
 
+static gchar *
+get_splash_background_path (GDesktopAppInfo *app_info)
+{
+  gchar *bg_path = NULL;
+
+  if (g_desktop_app_info_has_key (app_info,
+                                  SPLASH_BACKGROUND_DESKTOP_KEY))
+    {
+      gchar *bg_name =
+        g_desktop_app_info_get_string (app_info,
+                                       SPLASH_BACKGROUND_DESKTOP_KEY);
+
+      /* rewrite absolute paths, if they don't exist */
+      if (g_path_is_absolute (bg_name))
+        {
+          if (g_file_test (bg_name, G_FILE_TEST_EXISTS))
+            return bg_name;
+
+          gchar *basename = g_path_get_basename (bg_name);
+          g_free (bg_name);
+          bg_name = basename;
+        }
+
+      const gchar * const * data_dirs = g_get_system_data_dirs ();
+      int idx;
+
+      for (idx = 0; data_dirs[idx] != NULL; idx++)
+        {
+          const gchar *data_dir = data_dirs[idx];
+          bg_path = g_build_filename (data_dir, "eos-shell-content", "splash",
+                                      bg_name, NULL);
+
+          if (g_file_test (bg_path, G_FILE_TEST_EXISTS))
+            break;
+
+          g_clear_pointer (&bg_path, g_free);
+        }
+
+      g_free (bg_name);
+    }
+
+  if (bg_path == NULL)
+    bg_path = g_strdup (DEFAULT_SPLASH_SCREEN_BACKGROUND);
+
+  return bg_path;
+}
+
+static void
+eos_speedwagon_window_add_splash_background (EosSpeedwagonWindow *self)
+{
+  gchar *bg_path = get_splash_background_path (self->app_info);
+
+  GError *error = NULL;
+  GtkCssProvider *provider = gtk_css_provider_new ();
+  char *css_data =
+    g_strdup_printf (".speedwagon-bg { background-image: url(\"%s\"); }",
+                     bg_path);
+  gtk_css_provider_load_from_data (provider, css_data, -1, &error);
+  if (error != NULL)
+    {
+      g_warning ("Unable to load CSS for custom splash: %s", error->message);
+      g_error_free (error);
+    }
+  else
+    {
+      GtkStyleContext *context = gtk_widget_get_style_context (self->base_box);
+      gtk_style_context_add_provider (context, GTK_STYLE_PROVIDER (provider),
+                                      GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    }
+
+  g_free (css_data);
+  g_free (bg_path);
+  g_object_unref (provider);
+}
+
 static void
 eos_speedwagon_window_build_ui (EosSpeedwagonWindow *self)
 {
@@ -52,6 +127,7 @@ eos_speedwagon_window_build_ui (EosSpeedwagonWindow *self)
   gtk_widget_show (self->base_box);
   context = gtk_widget_get_style_context (self->base_box);
   gtk_style_context_add_class (context, "speedwagon-bg");
+  gtk_container_add (GTK_CONTAINER (self), self->base_box);
 
   self->spinner = gtk_spinner_new ();
   gtk_widget_show (self->spinner);
@@ -85,37 +161,7 @@ eos_speedwagon_window_build_ui (EosSpeedwagonWindow *self)
   gtk_widget_set_valign (image, GTK_ALIGN_CENTER);
   gtk_container_add (GTK_CONTAINER (spinner_box), image);
 
-  gchar *bg_path;
-  if (g_desktop_app_info_has_key (self->app_info,
-                                  SPLASH_BACKGROUND_DESKTOP_KEY))
-    bg_path = g_desktop_app_info_get_string (self->app_info,
-                                             SPLASH_BACKGROUND_DESKTOP_KEY);
-  else
-    bg_path = g_strdup (DEFAULT_SPLASH_SCREEN_BACKGROUND);
-
-  GError *error = NULL;
-  GtkCssProvider *provider = gtk_css_provider_new ();
-  char *css_data =
-    g_strdup_printf (".speedwagon-bg { background-image: url(\"%s\"); }",
-                     bg_path);
-  gtk_css_provider_load_from_data (provider, css_data, -1, &error);
-  if (error != NULL)
-    {
-      g_warning ("Unable to load CSS for custom splash: %s", error->message);
-      g_error_free (error);
-    }
-  else
-    {
-      context = gtk_widget_get_style_context (self->base_box);
-      gtk_style_context_add_provider (context, GTK_STYLE_PROVIDER (provider),
-                                      GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-    }
-
-  g_free (css_data);
-  g_free (bg_path);
-  g_object_unref (provider);
-
-  gtk_container_add (GTK_CONTAINER (self), self->base_box);
+  eos_speedwagon_window_add_splash_background (self);
 }
 
 static gboolean
