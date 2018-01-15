@@ -284,7 +284,6 @@ speedwagon_window_delete_event (GtkWidget *widget,
   const char *desktop_id;
 
   desktop_id = g_app_info_get_id (G_APP_INFO (window->app_info));
-  eos_speedwagon_emit_splash_closed (self->skeleton, desktop_id);
   g_hash_table_remove (self->splashes, desktop_id);
 
   return GDK_EVENT_PROPAGATE;
