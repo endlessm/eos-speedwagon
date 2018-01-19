@@ -11,8 +11,5 @@
     <method name="HideSplash">
       <arg type="s" direction="in" name="desktopFile" />
     </method>
-    <signal name="SplashClosed">
-      <arg type="s" name="desktopFile" />
-    </signal>
   </interface>
 </node>
