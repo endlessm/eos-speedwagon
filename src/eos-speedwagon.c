@@ -8,9 +8,17 @@
 #define SPLASH_SCREEN_FADE_OUT 0.2
 
 #define QUIT_TIMEOUT 15
-#define SPLASH_BACKGROUND_DESKTOP_KEY "X-Endless-SplashBackground"
-#define DEFAULT_SPLASH_SCREEN_BACKGROUND "resource:///com/endlessm/Speedwagon/splash-background-default.jpg"
 
+#define SPLASH_BACKGROUND_DESKTOP_KEY "X-Endless-SplashBackground"
+#define SPLASH_WIDTH "X-Endless-SplashWidth"
+#define SPLASH_HEIGHT "X-Endless-SplashHeight"
+#define SPLASH_SHOW_TOPBAR "X-Endless-SplashShowTopBar"
+
+#define DEFAULT_SPLASH_SCREEN_BACKGROUND "resource:///com/endlessm/Speedwagon/splash-background-default.jpg"
+#define DEFAULT_SPLASH_SHOW_TOPBAR TRUE
+#define DEFAULT_SPLASH_DIMENSION -1
+#define DEFAULT_SPLASH_WIDTH DEFAULT_SPLASH_DIMENSION
+#define DEFAULT_SPLASH_HEIGHT DEFAULT_SPLASH_DIMENSION
 
 typedef struct {
   GtkApplication parent;
@@ -90,6 +98,42 @@ get_splash_background_path (GDesktopAppInfo *app_info)
   return bg_path;
 }
 
+static gboolean
+get_splash_show_topbar (GDesktopAppInfo *app_info)
+{
+  gboolean show_topbar = DEFAULT_SPLASH_SHOW_TOPBAR;
+
+  if (g_desktop_app_info_has_key (app_info, SPLASH_SHOW_TOPBAR))
+    show_topbar = g_desktop_app_info_get_boolean (app_info, SPLASH_SHOW_TOPBAR);
+  return show_topbar;
+}
+
+static gint64
+_get_splash_dimension (GDesktopAppInfo *app_info, const gchar * dimension_key)
+{
+  gint64 dimension_value = DEFAULT_SPLASH_DIMENSION;
+
+  if (g_desktop_app_info_has_key (app_info, dimension_key)) {
+    gchar *str = g_desktop_app_info_get_string (app_info, dimension_key);
+    dimension_value = g_ascii_strtoll (str, NULL, 10);
+    g_free (str);
+  }
+
+  return dimension_value > 0 ? dimension_value : DEFAULT_SPLASH_DIMENSION;
+}
+
+static gint64
+get_splash_width (GDesktopAppInfo *app_info)
+{
+  return _get_splash_dimension (app_info, SPLASH_WIDTH);
+}
+
+static gint64
+get_splash_height (GDesktopAppInfo *app_info)
+{
+  return _get_splash_dimension (app_info, SPLASH_HEIGHT);
+}
+
 static void
 eos_speedwagon_window_add_splash_background (EosSpeedwagonWindow *self)
 {
@@ -98,8 +142,9 @@ eos_speedwagon_window_add_splash_background (EosSpeedwagonWindow *self)
   GError *error = NULL;
   GtkCssProvider *provider = gtk_css_provider_new ();
   char *css_data =
-    g_strdup_printf (".speedwagon-bg { background-image: url(\"%s\"); }",
+    g_strdup_printf (".speedwagon-bg { background: url(\"%s\"); background-size: 100%% 100%%;}",
                      bg_path);
+
   gtk_css_provider_load_from_data (provider, css_data, -1, &error);
   if (error != NULL)
     {
@@ -108,7 +153,7 @@ eos_speedwagon_window_add_splash_background (EosSpeedwagonWindow *self)
     }
   else
     {
-      GtkStyleContext *context = gtk_widget_get_style_context (self->base_box);
+      GtkStyleContext *context = gtk_widget_get_style_context (GTK_WIDGET (self));
       gtk_style_context_add_provider (context, GTK_STYLE_PROVIDER (provider),
                                       GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
     }
@@ -122,11 +167,19 @@ static void
 eos_speedwagon_window_build_ui (EosSpeedwagonWindow *self)
 {
   GtkStyleContext *context;
+  GdkScreen *screen;
+  GdkVisual *visual;
+
+  screen = gtk_window_get_screen (GTK_WINDOW (self));
+  visual = gdk_screen_get_rgba_visual (screen);
+  gtk_widget_set_visual (GTK_WIDGET (self), visual);
+
+  context = gtk_widget_get_style_context (GTK_WIDGET (self));
+  gtk_style_context_add_class (context, "speedwagon-bg");
+
 
   self->base_box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_widget_show (self->base_box);
-  context = gtk_widget_get_style_context (self->base_box);
-  gtk_style_context_add_class (context, "speedwagon-bg");
   gtk_container_add (GTK_CONTAINER (self), self->base_box);
 
   self->spinner = gtk_spinner_new ();
@@ -208,7 +261,7 @@ eos_speedwagon_window_ramp_out (EosSpeedwagonWindow *self)
   if (self->ramp_out_id != 0)
     return;
 
-  GtkStyleContext *context = gtk_widget_get_style_context (self->base_box);
+  GtkStyleContext *context = gtk_widget_get_style_context (GTK_WIDGET (self));
   gtk_style_context_add_class (context, "glow");
 
   self->ramp_out_id =
@@ -247,26 +300,34 @@ static GtkWindow *
 eos_speedwagon_window_new (EosSpeedwagonApp *app,
                            GDesktopAppInfo *app_info)
 {
+  gint64 window_width = get_splash_width (app_info);
+  gint64 window_height = get_splash_height (app_info);
   EosSpeedwagonWindow *window =
     g_object_new (eos_speedwagon_window_get_type (),
                   "application", app,
                   "role", "eos-speedwagon",
                   "title", g_app_info_get_name (G_APP_INFO (app_info)),
+                  "decorated", get_splash_show_topbar (app_info),
+                  "default-width", window_width,
+                  "default-height", window_height,
                   NULL);
   GtkWindow *gtk_window = GTK_WINDOW (window);
 
   window->app_info = g_object_ref (app_info);
-  gtk_window_maximize (gtk_window);
+
+  if (window_width == DEFAULT_SPLASH_DIMENSION && window_height == DEFAULT_SPLASH_DIMENSION)
+    gtk_window_maximize (gtk_window);
+  else
+    gtk_window_set_position (gtk_window, GTK_WIN_POS_CENTER_ALWAYS);
   gtk_window_set_keep_above (gtk_window, TRUE);
 
+  eos_speedwagon_window_build_ui (window);
   gtk_widget_realize (GTK_WIDGET (window));
   GdkWindow *gdk_window = gtk_widget_get_window (GTK_WIDGET (window));
   const char *desktop_id = g_app_info_get_id (G_APP_INFO (app_info));
   char *app_id = g_strndup (desktop_id, strlen (desktop_id) - 8);
   gdk_x11_window_set_utf8_property (gdk_window, "_GTK_APPLICATION_ID", app_id);
   g_free (app_id);
-
-  eos_speedwagon_window_build_ui (window);
 
   return gtk_window;
 }
